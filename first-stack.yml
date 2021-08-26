@@ -1,0 +1,8 @@
+heat_template_version: queens
+
+resources:
+  first_instance:
+    type: OS::Nova::Server
+    properties:
+      flavor: cirros256
+      image: cirros-0.5.2x86_64-disk
