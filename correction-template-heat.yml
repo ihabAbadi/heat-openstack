@@ -1,0 +1,62 @@
+heat_template_version: queens
+
+parameters:
+  imageId:
+    type: string
+    description: provid image id
+  keyName:
+    type: string
+    description: provid keypair name
+  instanceId:
+    type: string
+    description: provid instance id
+  flavorName:
+    type: string
+    description: provid flavor name
+  networks:
+    type: comma_delimited_list
+    description: provid networks array
+  param_size:
+    description: param for volume size
+    type: number
+    default: 1
+
+
+resources:
+  image_from_heat:
+    type: OS::Glance::WebImage
+    properties:
+      container_format: bare
+      disk_format: iso
+      location: https://dl-cdn.alpinelinux.org/alpine/v3.14/releases/x86_64/alpine-standard-3.14.1-x86_64.iso
+      id: { get_param : imageId }
+  
+  keypair_from_heat:
+    type: OS::Nova::KeyPair
+    properties:
+      name: { get_param: keyName}
+      save_private_key: true
+      type: ssh
+  
+  instance_from_heat:
+    type: OS::Nova::Server
+    properties:
+      flavor: { get_param: flavorName }
+      image: { get_param: imageId }
+      key_name: { get_param: keyName }
+      reservation_id: { get_param: instanceId }
+      # networks:
+      #   - network: public
+      #   - network: shared
+      networks: {get_param: networks}
+  
+  volume_from_heat:
+    type: OS::Cinder::Volume
+    properties:
+      size: { get_param: param_size}
+
+outputs:
+  private_keypair:
+    description: this is your private key pair
+    value: { get_attr: [keypair_from_heat, private_key]}
+
